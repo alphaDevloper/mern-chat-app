@@ -108,3 +108,5 @@ export const signOut = async (req, res, next) => {
     next(error);
   }
 };
+
+export const updateProfile = (req, res, next) => {};
