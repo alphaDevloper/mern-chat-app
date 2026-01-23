@@ -60,5 +60,51 @@ export const signUp = async (req, res, next) => {
   }
 };
 
-export const signIn = () => {};
-export const signOut = () => {};
+export const signIn = async () => {
+  try {
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      console.log("User not found");
+    }
+
+    const isPasswordValid = bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      console.log("Password isn't valid");
+    }
+
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "User signed in successfully",
+      data: {
+        token,
+        user,
+      },
+    });
+  } catch (error) {
+    console.log("Failed to sign in user:", error.message);
+    next(error);
+  }
+};
+
+export const signOut = async (req, res, next) => {
+  try {
+    // Since you're using JWT tokens, sign out is typically handled client-side
+    // by removing the token from storage. However, you can still send a success response.
+
+    res.status(200).json({
+      success: true,
+      message: "User signed out successfully",
+    });
+  } catch (error) {
+    console.log("Failed to sign out user:", error.message);
+    next(error);
+  }
+};
