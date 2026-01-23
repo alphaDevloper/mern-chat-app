@@ -2,6 +2,10 @@ import mongoose from "mongoose";
 import User from "../models/User.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { sendWelcomeEmail } from "../email/emailHandler.js";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 export const signUp = async (req, res, next) => {
   const session = await mongoose.startSession();
@@ -43,6 +47,12 @@ export const signUp = async (req, res, next) => {
         user: newUsers[0],
       },
     });
+
+    try {
+      await sendWelcomeEmail(email, name, process.env.CLIENT_URL);
+    } catch (error) {
+      console.log("Error sending welcome email:", error.message);
+    }
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
