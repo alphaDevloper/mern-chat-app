@@ -8,125 +8,128 @@ import cloudinary from "../lib/cloudinary.js";
 
 dotenv.config();
 
-export const signUp = async (req, res, next) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
+export const signUp = async (req, res) => {
+  const { fullName, email, password } = req.body;
+
   try {
-    const { name, email, password } = req.body;
-
-    const existingUser = await User.findOne({ email });
-
-    if (existingUser) {
-      const error = new Error("User already exists");
-      error.statusCode = 409;
-      throw error;
+    if (!fullName || !email || !password) {
+      return res.status(400).json({ message: "All fields are required" });
     }
 
-    // hash passwords -> securing passwords before saving it
+    if (password.length < 6) {
+      return res
+        .status(400)
+        .json({ message: "Password must be at least 6 characters" });
+    }
+
+    // check if emailis valid: regex
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: "Invalid email format" });
+    }
+
+    const user = await User.findOne({ email });
+    if (user) return res.status(400).json({ message: "Email already exists" });
+
+    // 123456 => $dnjasdkasj_?dmsakmk
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const newUsers = await User.create(
-      [{ name, email, password: hashedPassword }],
-      { session },
-    );
-    const token = jwt.sign(
-      { userId: newUsers[0]._id },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: "7d",
-      },
-    );
-
-    await session.commitTransaction();
-    session.endSession();
-    res.status(201).json({
-      success: true,
-      message: "User registered successsfully",
-      data: {
-        token,
-        user: newUsers[0],
-      },
+    const newUser = new User({
+      fullName,
+      email,
+      password: hashedPassword,
     });
 
-    try {
-      await sendWelcomeEmail(email, name, process.env.CLIENT_URL);
-    } catch (error) {
-      console.log("Error sending welcome email:", error.message);
+    if (newUser) {
+      // before CR:
+      // generateToken(newUser._id, res);
+      // await newUser.save();
+
+      // after CR:
+      // Persist user first, then issue auth cookie
+      const savedUser = await newUser.save();
+      generateToken(savedUser._id, res);
+
+      res.status(201).json({
+        _id: newUser._id,
+        fullName: newUser.fullName,
+        email: newUser.email,
+        profilePic: newUser.profilePic,
+      });
+
+      try {
+        await sendWelcomeEmail(
+          savedUser.email,
+          savedUser.fullName,
+          ENV.CLIENT_URL,
+        );
+      } catch (error) {
+        console.error("Failed to send welcome email:", error);
+      }
+    } else {
+      res.status(400).json({ message: "Invalid user data" });
     }
   } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
-    next(error);
+    console.log("Error in signup controller:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
-export const signIn = async () => {
-  try {
-    const { email, password } = req.body;
+export const signIn = async (req, res) => {
+  const { email, password } = req.body;
 
+  if (!email || !password) {
+    return res.status(400).json({ message: "Email and password are required" });
+  }
+
+  try {
     const user = await User.findOne({ email });
+    if (!user) return res.status(400).json({ message: "Invalid credentials" });
+    // never tell the client which one is incorrect: password or email
 
-    if (!user) {
-      console.log("User not found");
-    }
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
+    if (!isPasswordCorrect)
+      return res.status(400).json({ message: "Invalid credentials" });
 
-    const isPasswordValid = bcrypt.compare(password, user.password);
-
-    if (!isPasswordValid) {
-      console.log("Password isn't valid");
-    }
-
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "7d",
-    });
+    generateToken(user._id, res);
 
     res.status(200).json({
-      success: true,
-      message: "User signed in successfully",
-      data: {
-        token,
-        user,
-      },
+      _id: user._id,
+      fullName: user.fullName,
+      email: user.email,
+      profilePic: user.profilePic,
     });
   } catch (error) {
-    console.log("Failed to sign in user:", error.message);
-    next(error);
+    console.error("Error in login controller:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
-export const signOut = async (req, res, next) => {
-  try {
-    // Since you're using JWT tokens, sign out is typically handled client-side
-    // by removing the token from storage. However, you can still send a success response.
-
-    res.status(200).json({
-      success: true,
-      message: "User signed out successfully",
-    });
-  } catch (error) {
-    console.log("Failed to sign out user:", error.message);
-    next(error);
-  }
+export const signOut = (_, res) => {
+  res.cookie("jwt", "", { maxAge: 0 });
+  res.status(200).json({ message: "Logged out successfully" });
 };
 
-export const updateProfile = async (req, res, next) => {
+export const updateProfile = async (req, res) => {
   try {
     const { profilePic } = req.body;
     if (!profilePic)
-      res.status(400).json({ message: "Profile picture is required" });
+      return res.status(400).json({ message: "Profile pic is required" });
+
     const userId = req.user._id;
 
     const uploadResponse = await cloudinary.uploader.upload(profilePic);
-    const UpdatedUser = await User.findByIdAndUpdate(
+
+    const updatedUser = await User.findByIdAndUpdate(
       userId,
-      {
-        profilePic: uploadResponse.secure_url, // proflepic will be stored in the form of URL
-      },
-      { new: true }, // new; true will give updated profile pic
+      { profilePic: uploadResponse.secure_url },
+      { new: true },
     );
-    res.status(200).json(UpdatedUser);
+
+    res.status(200).json(updatedUser);
   } catch (error) {
-    console.log(error);
+    console.log("Error in update profile:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };

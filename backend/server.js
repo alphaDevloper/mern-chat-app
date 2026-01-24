@@ -4,6 +4,8 @@ import path from "path";
 import { connectDB } from "./database/db.js";
 import authRouter from "./routes/auth.route.js";
 import arcjetMiddleware from "./middleware/arcjet.middleware.js";
+import messageRoute from "./routes/message.route.js";
+import cookieParser from "cookie-parser";
 
 dotenv.config();
 
@@ -15,7 +17,10 @@ const port = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use("/api/v1/auth", authRouter);
-app.use(arcjetMiddleware);
+app.use("/api/messages", messageRoute);
+
+// app.use(arcjetMiddleware);
+app.use(cookieParser());
 
 app.get("/", (req, res) => {
   res.status(200).json({ message: "Hello, World!" });
