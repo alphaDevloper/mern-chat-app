@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import path from "path";
 import { connectDB } from "./database/db.js";
 import authRouter from "./routes/auth.route.js";
+import arcjetMiddleware from "./middleware/arcjet.middleware.js";
 
 dotenv.config();
 
@@ -14,9 +15,10 @@ const port = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use("/api/v1/auth", authRouter);
+app.use(arcjetMiddleware);
 
 app.get("/", (req, res) => {
-  res.send("Hello, World!");
+  res.status(200).json({ message: "Hello, World!" });
 });
 
 // we are making our app ready for deployment here
