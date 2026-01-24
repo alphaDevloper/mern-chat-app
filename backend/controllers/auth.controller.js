@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { sendWelcomeEmail } from "../email/emailHandler.js";
 import dotenv from "dotenv";
+import cloudinary from "../lib/cloudinary.js";
 
 dotenv.config();
 
@@ -109,4 +110,23 @@ export const signOut = async (req, res, next) => {
   }
 };
 
-export const updateProfile = (req, res, next) => {};
+export const updateProfile = async (req, res, next) => {
+  try {
+    const { profilePic } = req.body;
+    if (!profilePic)
+      res.status(400).json({ message: "Profile picture is required" });
+    const userId = req.user._id;
+
+    const uploadResponse = await cloudinary.uploader.upload(profilePic);
+    const UpdatedUser = await User.findByIdAndUpdate(
+      userId,
+      {
+        profilePic: uploadResponse.secure_url, // proflepic will be stored in the form of URL
+      },
+      { new: true }, // new; true will give updated profile pic
+    );
+    res.status(200).json(UpdatedUser);
+  } catch (error) {
+    console.log(error);
+  }
+};
