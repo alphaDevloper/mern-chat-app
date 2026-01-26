@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 import { sendWelcomeEmail } from "../email/emailHandler.js";
 import dotenv from "dotenv";
 import cloudinary from "../lib/cloudinary.js";
+import { generateToken } from "../lib/utils.js";
 
 dotenv.config();
 
@@ -62,7 +63,7 @@ export const signUp = async (req, res) => {
         await sendWelcomeEmail(
           savedUser.email,
           savedUser.fullName,
-          ENV.CLIENT_URL,
+          process.env.CLIENT_URL,
         );
       } catch (error) {
         console.error("Failed to send welcome email:", error);
@@ -71,7 +72,7 @@ export const signUp = async (req, res) => {
       res.status(400).json({ message: "Invalid user data" });
     }
   } catch (error) {
-    console.log("Error in signup controller:", error);
+    console.log("Error in signup controller:", error.message);
     res.status(500).json({ message: "Internal server error" });
   }
 };
