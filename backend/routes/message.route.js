@@ -8,9 +8,9 @@ import {
 } from "../controllers/message.controller.js";
 const messageRoute = Router();
 
-messageRoute.get("/contacts", authorize, getAllContacts);
+messageRoute.get("/contacts", getAllContacts);
 messageRoute.get("/chats", getChatPartners);
-messageRoute.get("/:id", authorize, getMessagesByUserId);
-messageRoute.post("/send/:id", authorize, sendMessage);
+messageRoute.get("/:id", getMessagesByUserId);
+messageRoute.post("/send/:id", sendMessage);
 
 export default messageRoute;
