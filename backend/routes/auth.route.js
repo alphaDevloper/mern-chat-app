@@ -9,6 +9,8 @@ import authorize from "../middleware/auth.middleware.js";
 
 const authRouter = Router();
 
+authRouter.use(authorize);
+
 authRouter.post("/sign-up", signUp);
 authRouter.post("/sign-in", signIn);
 authRouter.post("/sign-out", signOut);
