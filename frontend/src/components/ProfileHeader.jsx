@@ -51,11 +51,11 @@ function ProfileHeader() {
           </div>
           {/* username */}
           <div>
-            <h3 className="text-blue-500 font-medium text-base max-w-[180px] truncate">
+            <h3 className="font-semibold text-gray-900  max-w-[180px] truncate">
               {authUser.fullName}
             </h3>
 
-            <p className="text-slate-400 text-xs">Online</p>
+            <p className="text-xs text-gray-600">Online</p>
           </div>
         </div>{" "}
         <div className="flex gap-4 items-center">
@@ -64,7 +64,7 @@ function ProfileHeader() {
             className="text-slate-400 hover:text-slate-200 transition-colors"
             onClick={logout}
           >
-            <LogOutIcon className="size-5" />
+            <LogOutIcon className="w-5 h-5 text-gray-600 group-hover:text-red-500" />
           </button>
         </div>
       </div>
