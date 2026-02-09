@@ -23,7 +23,7 @@ function ProfileHeader() {
     };
   };
   return (
-    <div className="p-6 border-b border-slate-700/50">
+    <div className="p-6 border-b border-slate-700/50 bg-cyan-50">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           {/* Avatar */}
@@ -61,7 +61,7 @@ function ProfileHeader() {
         <div className="flex gap-4 items-center">
           {/* LOGOUT BTN */}
           <button
-            className="text-slate-400 hover:text-slate-200 transition-colors"
+            className="text-slate-400 hover:text-slate-200 transition-colors cursor-pointer"
             onClick={logout}
           >
             <LogOutIcon className="w-5 h-5 text-gray-600 group-hover:text-red-500" />

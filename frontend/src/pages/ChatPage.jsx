@@ -10,7 +10,7 @@ import NoConversationPlaceholder from "../components/NoConversationPlaceholder";
 function ChatPage() {
   const { activeTab, selectedUser } = useChatStore();
   return (
-    <div className="relative w-full max-w-6xl h-[800px]">
+    <div className="relative w-full max-w-6xl h-[600px]">
       <div className="flex h-full">
         {/* Sidebar */}
         <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
