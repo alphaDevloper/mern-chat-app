@@ -16,7 +16,7 @@ const __dirname = path.resolve();
 const port = process.env.PORT || 3000;
 // console.log(process.env.PORT);
 
-app.use(express.json());
+app.use(express.json({ limit: "5mb" }));
 // app.use(arcjetMiddleware);
 app.use(cookieParser());
 app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
