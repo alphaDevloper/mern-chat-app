@@ -75,6 +75,24 @@ const useChatStore = create((set, get) => ({
       console.error("Failed to send message", error);
     }
   },
+  subscribeToMessage: () => {
+    const { selectedUser } = get();
+    if (!selectedUser) return;
+
+    const socket = useAuthStore.getState().socket;
+
+    socket.on("newMessage", (newMessage) => {
+      const isMessageSentFromSender = newMessage.senderId === selectedUser._id;
+      if (!isMessageSentFromSender) return;
+
+      const currentMessages = get().messages;
+      set({ messages: [...currentMessages, newMessage] });
+    });
+  },
+  unSubscribeMessage: () => {
+    const socket = useAuthStore.getState().socket;
+    socket.off("newMessage");
+  },
 }));
 
 export default useChatStore;
