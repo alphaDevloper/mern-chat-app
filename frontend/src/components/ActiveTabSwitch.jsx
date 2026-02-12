@@ -11,7 +11,7 @@ function ActiveTabSwitch() {
           onClick={() => setActiveTab("chats")}
           className={`flex-1 flex items-center justify-center space-x-2 py-2 px-4 rounded-md transition-all ${
             activeTab === "chats"
-              ? "bg-white text-indigo-600 shadow-sm"
+              ? "bg-white text-black shadow-sm"
               : "text-gray-600 hover:text-gray-900"
           }`}
         >
@@ -22,7 +22,7 @@ function ActiveTabSwitch() {
           onClick={() => setActiveTab("contacts")}
           className={`flex-1 flex items-center justify-center space-x-2 py-2 px-4 rounded-md transition-all ${
             activeTab === "contacts"
-              ? "bg-white text-indigo-600 shadow-sm"
+              ? "bg-white text-black shadow-sm"
               : "text-gray-600 hover:text-gray-900"
           }`}
         >

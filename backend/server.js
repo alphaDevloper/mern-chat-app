@@ -7,10 +7,10 @@ import arcjetMiddleware from "./middleware/arcjet.middleware.js";
 import messageRoute from "./routes/message.route.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import { app, server } from "./lib/socket.js";
 
 dotenv.config();
 
-const app = express();
 const __dirname = path.resolve();
 
 const port = process.env.PORT || 3000;
@@ -35,7 +35,7 @@ if (process.env.NODE_ENV === "production") {
     res.sendFile(__dirname, "../frontend/dist/index.html");
   });
 }
-app.listen(port, async () => {
+server.listen(port, async () => {
   console.log(`Server is running on http://localhost:${port}`);
   await connectDB();
 });
